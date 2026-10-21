@@ -1,18 +1,6 @@
-#include "../src/ui_layout.h"
-#include "../src/ui_theme.h"
-#include "../src/ui_anim.h"
-#include "../src/ui_overlay.h"
-#include "../src/ui_gfx.h"
-#include "../src/ui_registry.h"
-#include "../src/ui_palette.h"
-#include "../src/ui_toast.h"
-#include "../src/ui_config.h"
-#include "../src/ui_hud.h"
-#include "../src/ui_fields.h"
-#include "../src/IconsLucide.h"
-#include "../imgui/imgui_internal.h"
-#include "../imgui/backends/imgui_impl_win32.h"
-#include "../imgui/backends/imgui_impl_dx11.h"
+#include "glass_menu.h"
+#include "imgui/backends/imgui_impl_win32.h"
+#include "imgui/backends/imgui_impl_dx11.h"
 
 #include <d3d11.h>
 #include <windows.h>
@@ -186,15 +174,99 @@ static LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
     return DefWindowProcW(hWnd, msg, wParam, lParam);
 }
 
-int WINAPI wWinMain(HINSTANCE hInst, HINSTANCE, PWSTR, int) {
+static void SaveBackbufferBmp(const wchar_t* path) {
+    ID3D11Texture2D* back = nullptr;
+    g_Swap->GetBuffer(0, IID_PPV_ARGS(&back));
+    if (!back) return;
+    D3D11_TEXTURE2D_DESC d;
+    back->GetDesc(&d);
+    d.Usage = D3D11_USAGE_STAGING; d.BindFlags = 0; d.CPUAccessFlags = D3D11_CPU_ACCESS_READ; d.MiscFlags = 0;
+    ID3D11Texture2D* staging = nullptr;
+    g_Device->CreateTexture2D(&d, nullptr, &staging);
+    if (!staging) { back->Release(); return; }
+    g_Context->CopyResource(staging, back);
+    D3D11_MAPPED_SUBRESOURCE m;
+    if (SUCCEEDED(g_Context->Map(staging, 0, D3D11_MAP_READ, 0, &m))) {
+        FILE* f = nullptr;
+        if (_wfopen_s(&f, path, L"wb") == 0 && f) {
+            BITMAPFILEHEADER fh = {}; BITMAPINFOHEADER ih = {};
+            ih.biSize = sizeof(ih); ih.biWidth = (LONG)d.Width; ih.biHeight = -(LONG)d.Height;
+            ih.biPlanes = 1; ih.biBitCount = 32; ih.biCompression = BI_RGB;
+            fh.bfType = 0x4D42; fh.bfOffBits = sizeof(fh) + sizeof(ih);
+            fh.bfSize = fh.bfOffBits + d.Width * d.Height * 4;
+            fwrite(&fh, sizeof(fh), 1, f); fwrite(&ih, sizeof(ih), 1, f);
+            for (UINT y = 0; y < d.Height; y++) {
+                const BYTE* row = (const BYTE*)m.pData + y * m.RowPitch;
+                for (UINT x = 0; x < d.Width; x++) {
+                    const BYTE px[4] = { row[x * 4 + 2], row[x * 4 + 1], row[x * 4 + 0], 255 };
+                    fwrite(px, 4, 1, f);
+                }
+            }
+            fclose(f);
+        }
+        g_Context->Unmap(staging, 0);
+    }
+    staging->Release();
+    back->Release();
+}
+
+struct Shot { const wchar_t* name; void (*setup)(); void (*late)(); };
+
+static void ShotPage0()   { g_ActiveTab = 0; }
+static void ShotPage1()   { g_ActiveTab = 1; }
+static void ShotPage2()   { g_ActiveTab = 2; }
+static void ShotPage3()   { g_ActiveTab = 3; }
+static void ShotPage4()   { g_ActiveTab = 4; }
+static void ShotPalette() { g_ActiveTab = 0; UI_Palette_Open(); }
+static void TypeQuery()   { ImGui::GetIO().AddInputCharactersUTF8("color"); }
+static void ShotCompact() { UI_Palette_Close(); g_UI.sidebarCollapsed = true; g_ActiveTab = 1; }
+static void PickAccent(int i) { g_UI.sidebarCollapsed = false; g_ActiveTab = 0; g_UI.accent = i; UI_ApplyAppearance(); }
+static void ShotAccent0() { PickAccent(0); }
+static void ShotAccent1() { PickAccent(1); }
+static void ShotAccent2() { PickAccent(2); }
+static void ShotAccent3() { PickAccent(3); }
+static void ShotHud() {
+    PickAccent(0);
+    g_Hud.crosshair = g_Hud.input = true;
+    MenuAnim_Toggle();
+}
+
+static const Shot kShots[] = {
+    { L"page_dashboard",   ShotPage0,   nullptr },
+    { L"page_motion",      ShotPage1,   nullptr },
+    { L"page_preferences", ShotPage2,   nullptr },
+    { L"page_hud",         ShotPage3,   nullptr },
+    { L"page_settings",    ShotPage4,   nullptr },
+    { L"palette",          ShotPalette, TypeQuery },
+    { L"compact",          ShotCompact, nullptr },
+    { L"accent_0",         ShotAccent0, nullptr },
+    { L"accent_1",         ShotAccent1, nullptr },
+    { L"accent_2",         ShotAccent2, nullptr },
+    { L"accent_3",         ShotAccent3, nullptr },
+    { L"hud_overlays",     ShotHud,     nullptr },
+};
+
+int WINAPI wWinMain(HINSTANCE hInst, HINSTANCE, PWSTR cmdLine, int) {
+    static wchar_t shotDir[MAX_PATH] = {};
+    const bool shooting = cmdLine && wcsncmp(cmdLine, L"--shot ", 7) == 0;
+    if (shooting) {
+        const wchar_t* s = cmdLine + 7;
+        while (*s == L' ' || *s == L'"') s++;
+        wcsncpy_s(shotDir, s, _TRUNCATE);
+        size_t n = wcslen(shotDir);
+        while (n && (shotDir[n - 1] == L' ' || shotDir[n - 1] == L'"' || shotDir[n - 1] == L'\\')) shotDir[--n] = 0;
+    }
+
     ImGui_ImplWin32_EnableDpiAwareness();
     WNDCLASSEXW wc = { sizeof(wc), CS_CLASSDC, WndProc, 0, 0, hInst, nullptr,
                        LoadCursor(nullptr, IDC_ARROW), nullptr, nullptr, L"GlassMenuDemo", nullptr };
     RegisterClassExW(&wc);
+    RECT wr = { 0, 0, 1600, 900 };
+    AdjustWindowRect(&wr, WS_OVERLAPPEDWINDOW, FALSE);
     HWND hwnd = CreateWindowW(wc.lpszClassName, L"Glass Menu - INSERT to open",
-        WS_OVERLAPPEDWINDOW, 100, 80, 1280, 800, nullptr, nullptr, hInst, nullptr);
+        WS_OVERLAPPEDWINDOW, 60, 40, wr.right - wr.left, wr.bottom - wr.top, nullptr, nullptr, hInst, nullptr);
     if (!CreateDevice(hwnd)) { MessageBoxW(nullptr, L"D3D11 init failed", L"Glass Menu", MB_ICONERROR); return 1; }
-    ShowWindow(hwnd, SW_SHOWDEFAULT);
+    ShowWindow(hwnd, shooting ? SW_SHOWNOACTIVATE : SW_SHOWDEFAULT);
     UpdateWindow(hwnd);
 
     IMGUI_CHECKVERSION();
@@ -210,6 +282,21 @@ int WINAPI wWinMain(HINSTANCE hInst, HINSTANCE, PWSTR, int) {
     ImGui_ImplDX11_Init(g_Device, g_Context);
     UIGfx_Init(g_Device, g_Context);
     RegisterDemoSettings();
+
+    if (shooting) {
+        if (g_UI.menuW < 760.0f) { g_UI.menuW = 1080.0f; g_UI.menuH = 680.0f; }
+        g_Hud.info = true;
+        g_Hud.chStyle = 0;
+        Hud_InputDemo(true);
+        const int hl = Registry_IndexOf(&demo::highlight.on);
+        Hotkey_Set(hl, VK_F4);
+        Hotkey_SetMode(hl, HotkeyMode::Hold);
+        Hotkey_Set(Registry_IndexOf(&demo::marker.on), 'M');
+        Hotkey_Set(Registry_IndexOf(&demo::preferences.nightMode), 'N');
+        demo::motion.on = true;
+    }
+    int shotFrame = 0;
+    int shotIndex = -1;
 
     bool running = true;
     while (running) {
@@ -250,13 +337,32 @@ int WINAPI wWinMain(HINSTANCE hInst, HINSTANCE, PWSTR, int) {
         UI_RenderOverlay(active, IM_ARRAYSIZE(active));
         UI_RenderMenu();
 
+        const ImVec2 ds = ImGui::GetIO().DisplaySize;
         const float clear[4] = { 0, 0, 0, 1 };
         g_Context->OMSetRenderTargets(1, &g_RTV, nullptr);
         g_Context->ClearRenderTargetView(g_RTV, clear);
+        UIGfx_DrawTestScene(g_RTV, ds.x, ds.y, (float)ImGui::GetTime());
         UIGfx_Process(g_Swap);
         ImGui::Render();
         g_Context->OMSetRenderTargets(1, &g_RTV, nullptr);
         ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+
+        if (shooting) {
+            const int perShot = 60;
+            if (shotFrame % perShot == 0) {
+                if (shotIndex >= 0) {
+                    wchar_t path[MAX_PATH];
+                    swprintf_s(path, L"%ls\\%ls.bmp", shotDir, kShots[shotIndex].name);
+                    SaveBackbufferBmp(path);
+                }
+                shotIndex++;
+                if (shotIndex >= (int)IM_ARRAYSIZE(kShots)) running = false;
+                else kShots[shotIndex].setup();
+            } else if (shotFrame % perShot == 12 && shotIndex >= 0 && kShots[shotIndex].late) {
+                kShots[shotIndex].late();
+            }
+            shotFrame++;
+        }
         g_Swap->Present(1, 0);
     }
 

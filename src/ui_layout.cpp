@@ -2091,9 +2091,22 @@ void UI_RenderTab_Settings() {
     UI::EndCard();
 
     UI::BeginCard("##card_tips", "TIPS");
-    UI::Hint("Hover a switch and click the keyboard chip to bind a key. Esc clears a binding.");
-    UI::Hint("Next to a bound key, slide HOLD / TOGGLE: hold keeps the option on only while the key is down.");
-    UI::Hint("A dot after a label marks a changed value. Right-click the row to reset it.");
+    {
+        static const char* const kTips[] = {
+            "Hover a switch and click the keyboard chip to bind a key. Esc clears a binding.",
+            "Next to a bound key, slide HOLD / TOGGLE: hold keeps the option on only while the key is down.",
+            "Right-click a changed row to reset it to its default.",
+            "Ctrl+K opens the command palette from anywhere in the menu.",
+        };
+        ImGui::PushStyleColor(ImGuiCol_Text, V4(Theme::TextDim));
+        ImGui::PushTextWrapPos(ImGui::GetCursorPosX() + ImGui::GetContentRegionAvail().x);
+        for (const char* t : kTips) {
+            ImGui::TextUnformatted(t);
+            ImGui::Dummy(ImVec2(0, 2));
+        }
+        ImGui::PopTextWrapPos();
+        ImGui::PopStyleColor();
+    }
     UI::EndCard();
 
     UI::BeginCard("##card_about", "ABOUT");

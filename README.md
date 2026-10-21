@@ -1,55 +1,104 @@
 <div align="center">
 
+<img src="docs/page_dashboard.jpg" alt="Glass Menu" width="100%">
+
 # Glass Menu
 
-A modern glass-blur interface for Dear ImGui.
+**A polished, glass-blur interface layer for Dear ImGui on DirectX 11.**
 
-[![C++17](https://img.shields.io/badge/C%2B%2B-17-1f1f1f?style=for-the-badge)](#build)
-[![DirectX 11](https://img.shields.io/badge/DirectX-11-1f1f1f?style=for-the-badge)](#requirements)
-[![Dear ImGui](https://img.shields.io/badge/Dear%20ImGui-1.91-1f1f1f?style=for-the-badge)](https://github.com/ocornut/imgui)
-[![License](https://img.shields.io/badge/License-MIT-F5A623?style=for-the-badge)](LICENSE)
+Sidebar navigation, animated cards, hotkeys on every toggle, profiles, a command palette and HUD overlays.
+Drop it into an existing Dear ImGui app and describe your pages as plain functions.
 
-[Highlights](#highlights) · [Preview](#preview) · [Build](#build) · [Integrate](#integrate) · [API](#api)
+[![C++17](https://img.shields.io/badge/C%2B%2B-17-262626?style=flat-square)](#requirements)
+[![DirectX 11](https://img.shields.io/badge/DirectX-11-262626?style=flat-square)](#requirements)
+[![Dear ImGui](https://img.shields.io/badge/Dear%20ImGui-1.91-262626?style=flat-square)](https://github.com/ocornut/imgui)
+[![CMake](https://img.shields.io/badge/CMake-ready-262626?style=flat-square)](#use-it-in-your-project)
+[![License: MIT](https://img.shields.io/badge/License-MIT-F5A623?style=flat-square)](LICENSE)
+
+[**Download demo**](https://github.com/sfr-development/imgui-glass-menu/releases/latest) &nbsp;&middot;&nbsp;
+[Quick start](#quick-start) &nbsp;&middot;&nbsp;
+[Use it in your project](#use-it-in-your-project) &nbsp;&middot;&nbsp;
+[API](#api-reference) &nbsp;&middot;&nbsp;
+[FAQ](#faq)
 
 </div>
 
----
+<br>
 
-## Highlights
+## Gallery
 
-A ready-to-use overlay interface, built on vanilla Dear ImGui, that goes beyond the default theme.
+<table>
+  <tr>
+    <td width="50%"><img src="docs/page_settings.jpg" alt="Settings page"></td>
+    <td width="50%"><img src="docs/palette.jpg" alt="Command palette"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub><b>Built-in settings page</b> &mdash; accents, corners, animation speed, glass, sound, profiles</sub></td>
+    <td align="center"><sub><b>Command palette</b> &mdash; <code>Ctrl+K</code> finds every page and every setting</sub></td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/hud_overlays.jpg" alt="HUD overlays"></td>
+    <td width="50%"><img src="docs/compact.jpg" alt="Compact sidebar"></td>
+  </tr>
+  <tr>
+    <td align="center"><sub><b>HUD overlays</b> &mdash; active list with keybinds, info bar, input overlay, crosshair</sub></td>
+    <td align="center"><sub><b>Compact sidebar</b> &mdash; collapses to icons with a spring animation</sub></td>
+  </tr>
+</table>
 
-- Glass-blur sidebar and content panel, drawn with real D3D11 shaders
-- Live-swappable accents, corner radii and animation speeds
-- Hotkey chips on every toggle, with hold or toggle modes
-- Profiles with autosave, share codes that fit in a chat message and file import or export
-- Command palette on `Ctrl+K` that searches every page and every setting
-- Draggable HUD elements with a dashed frame while the menu is open
-- An always-visible active-features panel with a separate section for inactive items that carry a keybind
-- Crosshair, info bar and input overlay out of the box
-- One-call branding: title, status text, and an optional link button in the sidebar
+<p align="center"><img src="docs/accents.jpg" alt="Accent colors" width="100%"></p>
+<p align="center"><sub>Four built-in accents plus a custom color, switchable at runtime.</sub></p>
 
-## Preview
+<br>
 
-A standalone demo window ships in `demo/`. It wires the library to a Dear ImGui context and three sample pages (`Dashboard`, `Motion`, `Preferences`) plus the built-in `HUD` and `Settings` pages.
+## Features
 
-```bash
-demo\build.bat
-demo\bin\glass_menu_demo.exe
-```
+<table>
+<tr>
+<td width="50%" valign="top">
 
-Press `Insert` to open or close the menu.
+**Look and feel**
+- Real glass blur behind the menu, rendered with D3D11 shaders
+- Soft drop shadows, staggered card entrance, sliding page titles
+- Accent presets, custom accent, three corner styles
+- Animation speed from instant to relaxed
+- Interface sounds with optional hover ticks
 
-## Requirements
+**Navigation**
+- Grouped sidebar with a gliding selection pill
+- Collapsible to an icon rail
+- Command palette that searches pages and settings
+- Smooth scrolling and edge fades on long pages
 
-- Windows 10 2004 or newer
-- DirectX 11 capable GPU
-- Visual Studio 2022 or newer with the v143 toolset (C++17)
-- Dear ImGui 1.91 or compatible (vendored under `imgui/`)
+</td>
+<td width="50%" valign="top">
 
-## Build
+**Settings that manage themselves**
+- Register a value once: it is saved, searchable and bindable
+- Hotkey chip on every toggle, hold or toggle mode
+- Right-click resets a changed value to its default
+- Profiles with autosave, create, switch, delete
+- Share codes short enough for a chat message
+- Export and import profile files
 
-The library is a set of translation units in `src/` plus the vendored Dear ImGui files. Add them to any Dear ImGui host application that already has a D3D11 backend. The demo project in `demo/build.bat` shows the exact list.
+**HUD**
+- Active-features panel with a separate keybind section
+- Info bar with FPS, clock, profile and active count
+- Keyboard and mouse input overlay
+- Crosshair with four styles
+- Every HUD element is draggable and snaps to the edges
+
+</td>
+</tr>
+</table>
+
+<br>
+
+## Quick start
+
+**Try it without building:** grab `glass_menu_demo.zip` from the [latest release](https://github.com/sfr-development/imgui-glass-menu/releases/latest), unzip and run `glass_menu_demo.exe`. Press `Insert` to open or close the menu.
+
+**Build the demo yourself:**
 
 ```bash
 git clone https://github.com/sfr-development/imgui-glass-menu.git
@@ -57,134 +106,241 @@ cd imgui-glass-menu
 demo\build.bat
 ```
 
-## Integrate
+`build.bat` finds Visual Studio on its own. The result is `demo\bin\glass_menu_demo.exe`.
 
-Set the branding, the pages and the status line once at startup; the library owns the sidebar and the content panel from then on.
+**Or with CMake:**
+
+```bash
+cmake -S . -B build
+cmake --build build --config Release
+```
+
+<br>
+
+## Use it in your project
+
+### 1. Add the library
+
+**CMake**
+
+```cmake
+add_subdirectory(external/imgui-glass-menu)
+target_link_libraries(my_app PRIVATE glass_menu::glass_menu)
+```
+
+The target compiles the vendored Dear ImGui as well. If your project already builds its own Dear ImGui, set `GLASS_MENU_BUNDLE_IMGUI=OFF` and make sure the `imgui/` headers are on the include path.
+
+**Without CMake:** add every `.cpp` file in `src/` to your project and put the repository root, `src/` and `imgui/` on the include path. `demo/build.bat` shows the complete compiler command.
+
+### 2. Describe your pages
+
+A page is a function. Cards, toggles and sliders come from the `UI::` namespace.
 
 ```cpp
-#include "ui_layout.h"
-#include "ui_theme.h"
-#include "ui_registry.h"
-#include "ui_fields.h"
-#include "IconsLucide.h"
+#include "glass_menu.h"
 
-static void RenderDashboard() {
-    UI::BeginCard("##card_main", "GENERAL");
-    static bool enable = true;
-    UI::Toggle("Enable", &enable);
-    UI::Slider("Intensity", &g_State.intensity, 0.0f, 1.0f, "%.0f%%");
+static bool  g_Enabled   = true;
+static float g_Intensity = 0.6f;
+
+static void RenderHome() {
+    UI::BeginCard("##general", "GENERAL");
+    UI::Toggle("Enabled", &g_Enabled);
+    UI::SliderPercent("Intensity", &g_Intensity);
     UI::EndCard();
 }
 
-static const UI_NavItem kNav[] = {
-    { ICON_LC_LAYOUT_DASHBOARD, "Dashboard", "Overview and quick toggles", "WORKSPACE", RenderDashboard },
-    { ICON_LC_CROSSHAIR,        "HUD",       "Crosshair, info bar, overlays", "INTERFACE", UI_RenderTab_Hud },
-    { ICON_LC_SETTINGS,         "Settings",  "Appearance, sound, profiles",   "INTERFACE", UI_RenderTab_Settings },
+static const UI_NavItem kPages[] = {
+    { ICON_LC_HOUSE,     "Home",     "Everything at a glance",       "GENERAL",   RenderHome },
+    { ICON_LC_CROSSHAIR, "HUD",      "Crosshair, info bar, overlays", "INTERFACE", UI_RenderTab_Hud },
+    { ICON_LC_SETTINGS,  "Settings", "Appearance, sound, profiles",   "INTERFACE", UI_RenderTab_Settings },
 };
-
-void Init(HWND hwnd, ID3D11Device* dev, ID3D11DeviceContext* ctx, IDXGISwapChain* swap) {
-    ApplyTheme();
-    UIConfig_SetFolder("MyApp");
-    UI_SetBrand("MY", "APP");
-    UI_SetStatus("ONLINE");
-    UI_SetLink(ICON_LC_EXTERNAL_LINK, "Documentation", "https://example.com/docs");
-    UI_SetNavigation(kNav, IM_ARRAYSIZE(kNav));
-    UI_LoadFonts();
-
-    const int tabSettings = UI_TabOf(UI_RenderTab_Settings);
-    const int tabHud      = UI_TabOf(UI_RenderTab_Hud);
-    static const Field kFields[] = { UI_PROFILE_FIELDS(tabSettings, tabHud) };
-    Registry_Init(kFields, IM_ARRAYSIZE(kFields));
-
-    UIGfx_Init(dev, ctx);
-}
-
-void Draw(ID3D11DeviceContext* ctx, IDXGISwapChain* swap, ID3D11RenderTargetView* rtv) {
-    UI_RenderOverlay(nullptr, 0);
-    UI_RenderMenu();
-    ctx->OMSetRenderTargets(1, &rtv, nullptr);
-    UIGfx_Process(swap);
-}
 ```
 
-Pages are plain functions. The library calls them inside a scroll area and leaves everything else to Dear ImGui and the helpers in `UI::`.
+### 3. Set it up once
 
-## API
-
-### Branding
+Call this after `ImGui::CreateContext()` and before the Dear ImGui backends are initialized.
 
 ```cpp
-void UI_SetBrand(const char* title, const char* subtitle);
-void UI_SetStatus(const char* text);
-void UI_SetLink(const char* icon, const char* label, const char* url);
-```
+ApplyTheme();
+UIConfig_SetFolder("MyApp");
+UI_SetBrand("MY", "APP");
+UI_SetStatus("ONLINE");
+UI_SetNavigation(kPages, IM_ARRAYSIZE(kPages));
+UI_LoadFonts();
 
-### Pages
+ImGui_ImplWin32_Init(hwnd);
+ImGui_ImplDX11_Init(device, context);
+UIGfx_Init(device, context);
 
-```cpp
-struct UI_NavItem {
-    const char* icon;
-    const char* label;
-    const char* subtitle;
-    const char* group;
-    void      (*render)();
-};
-void UI_SetNavigation(const UI_NavItem* items, int count);
-int  UI_TabOf(void (*render)());
-```
-
-Items with the same `group` string are listed under one caption. The order of the array is the sidebar order.
-
-### Controls
-
-```cpp
-UI::BeginCard(id, title);
-UI::Toggle(label, &value);
-UI::Slider(label, &value, min, max, format);
-UI::SliderPercent(label, &value01);
-UI::Segmented(label, &index, items, count);
-UI::ColorRow(label, color);
-UI::Keybind(label, &vkCode, &mode);
-UI::Hint("Short help text shown under the label.");
-UI::EndCard();
-```
-
-### Profiles and hotkeys
-
-Register every setting that should be saved, searched or bindable:
-
-```cpp
+const int home     = UI_TabOf(RenderHome);
+const int settings = UI_TabOf(UI_RenderTab_Settings);
+const int hud      = UI_TabOf(UI_RenderTab_Hud);
 static const Field kFields[] = {
-    { "demo.enable",    "Enable",    tabDashboard, FieldType::Bool,  &enable },
-    { "demo.intensity", "Intensity", tabDashboard, FieldType::Float, &intensity },
+    { "home.enabled",   "Enabled",   home, FieldType::Bool,  &g_Enabled },
+    { "home.intensity", "Intensity", home, FieldType::Float, &g_Intensity },
+    UI_PROFILE_FIELDS(settings, hud),
 };
 Registry_Init(kFields, IM_ARRAYSIZE(kFields));
 ```
 
-Profiles are plain `.cfg` files under `%APPDATA%\<folder>\profiles\`. Share codes contain only values that differ from the default and fit in a chat message.
-
-### Active-features overlay
-
-An always-visible panel that lists what is on, with a separate section for inactive entries that carry a keybind, so viewers of the overlay know how to activate them.
+### 4. Draw every frame
 
 ```cpp
-const OverlayItem active[] = {
-    { "Highlight", "WORKSPACE", highlight.on, &highlight.on },
-    { "Marker",    "WORKSPACE", marker.on,    &marker.on },
-};
-UI_RenderOverlay(active, IM_ARRAYSIZE(active));
+ImGui_ImplDX11_NewFrame();
+ImGui_ImplWin32_NewFrame();
+ImGui::NewFrame();
+
+UI_RenderOverlay(nullptr, 0);
+UI_RenderMenu();
+
+DrawYourScene();
+UIGfx_Process(swapChain);
+
+ImGui::Render();
+context->OMSetRenderTargets(1, &backBufferRtv, nullptr);
+ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+swapChain->Present(1, 0);
 ```
+
+`UIGfx_Process` copies what is already in the back buffer for the glass blur, so call it after your scene and before `ImGui::Render`.
+
+### 5. Toggle the menu
+
+```cpp
+case WM_KEYDOWN:
+    if (wParam == VK_INSERT) MenuAnim_Toggle();
+    break;
+```
+
+Forward messages to `ImGui_ImplWin32_WndProcHandler` as usual.
+
+<br>
+
+## API reference
+
+### Setup and branding
+
+| Function | Purpose |
+|---|---|
+| `UI_SetNavigation(items, count)` | Pages shown in the sidebar, in order |
+| `UI_SetBrand(title, subtitle)` | Text next to the logo, in the info bar and in About |
+| `UI_SetStatus(text)` | Label next to the pulsing dot in the sidebar footer |
+| `UI_SetLink(icon, label, url)` | Optional button above the footer that opens a URL |
+| `UIConfig_SetFolder(name)` | Folder under `%APPDATA%` for `ui.cfg` and profiles |
+| `UI_LoadFonts()` | Loads fonts and icons, then the saved look |
+| `UI_TabOf(render)` | Index of the page that uses this render function |
+
+### Widgets
+
+| Widget | Notes |
+|---|---|
+| `UI::BeginCard(id, title)` / `UI::EndCard()` | Numbered card with entrance animation |
+| `UI::BeginColumns(id, n)` / `UI::NextColumn()` / `UI::EndColumns()` | Side-by-side cards |
+| `UI::Toggle(label, &bool)` | Switch with hotkey chip and hold or toggle mode |
+| `UI::Slider(label, &float, min, max, fmt)` | Value slider |
+| `UI::SliderInt(label, &int, min, max, fmt)` | Integer slider |
+| `UI::SliderPercent(label, &float01)` | 0..1 shown as percent |
+| `UI::Segmented(label, &index, items, count)` | Segmented switch |
+| `UI::Combo(label, &index, items, count)` | Dropdown |
+| `UI::ColorRow(label, float[4])` | Color swatch with picker |
+| `UI::Keybind(label, &vk, &mode)` | Key picker |
+| `UI::Button(label, icon)` | Full-width secondary button |
+| `UI::Hint(text)` | Info icon with a tooltip on the previous label |
+
+### Settings registry
+
+| Function | Purpose |
+|---|---|
+| `Registry_Init(fields, count)` | Register values; loads the active profile |
+| `Hotkey_Set(field, vk)` / `Hotkey_SetMode(field, mode)` | Bind keys from code |
+| `Profiles_Load(name)` / `Profiles_Create(name)` | Switch or create profiles |
+| `Profiles_ShareCode(includeUi)` / `Profiles_Import(text, hint, includeUi)` | Share codes |
+
+### HUD
+
+| Function | Purpose |
+|---|---|
+| `UI_RenderOverlay(items, count)` | Active-features panel, info bar, crosshair, input overlay, toasts |
+| `UI_RenderTab_Hud()` | Built-in page with all HUD options |
+| `g_Hud` | HUD settings, e.g. `g_Hud.crosshair = true` |
+
+`OverlayItem` entries name things that are on. Every registered on/off setting with a hotkey shows up automatically: under **Active** while it is on, under **Keybinds** while it is off.
+
+```cpp
+const OverlayItem items[] = {
+    { "Highlight", "GENERAL", g_Highlight, &g_Highlight },
+};
+UI_RenderOverlay(items, IM_ARRAYSIZE(items));
+```
+
+<br>
+
+## Requirements
+
+- Windows 10 version 2004 or newer
+- A DirectX 11 capable GPU
+- Visual Studio 2022 or newer with **Desktop development with C++**
+- Dear ImGui 1.91 (included under `imgui/`)
+
+<br>
 
 ## Project layout
 
 ```
-├─ src/              The library (ui_layout, ui_theme, ui_hud, ui_overlay, ui_registry, ...)
-├─ imgui/            Dear ImGui 1.91 (vendored)
-├─ demo/             Standalone preview window with three sample pages
-├─ LICENSE           MIT
-└─ README.md
+imgui-glass-menu/
+├─ src/
+│  ├─ glass_menu.h        single include for everything below
+│  ├─ ui_layout.*         menu window, sidebar, pages, widgets, settings page
+│  ├─ ui_theme.h          colors, accents, radii
+│  ├─ ui_gfx.*            glass blur, drop shadows, demo backdrop
+│  ├─ ui_registry.*       settings registry, hotkeys, profiles, share codes
+│  ├─ ui_overlay.*        active-features panel and HUD dragging
+│  ├─ ui_hud.*            crosshair, info bar, input overlay, HUD page
+│  ├─ ui_palette.*        command palette
+│  ├─ ui_toast.*          notifications
+│  ├─ ui_sound.*          interface sounds
+│  └─ ui_anim.*, ui_kit.h, ui_config.*, ui_fields.h, IconsLucide.h
+├─ imgui/                 Dear ImGui 1.91 with Win32 and DX11 backends
+├─ demo/                  demo app and build.bat
+├─ docs/                  screenshots
+└─ CMakeLists.txt
 ```
+
+<br>
+
+## FAQ
+
+<details>
+<summary><b>Does it work with DirectX 12, Vulkan or OpenGL?</b></summary>
+<br>
+The widgets are plain Dear ImGui and work with any backend. The glass blur and the drop shadows use D3D11. Without <code>UIGfx_Init</code> the menu falls back to solid surfaces.
+</details>
+
+<details>
+<summary><b>Where are settings stored?</b></summary>
+<br>
+In <code>%APPDATA%\&lt;folder&gt;\</code>: <code>ui.cfg</code> for the menu look and window position, and one <code>.cfg</code> file per profile under <code>profiles\</code>.
+</details>
+
+<details>
+<summary><b>How do I add my own icons?</b></summary>
+<br>
+All <a href="https://lucide.dev">Lucide</a> icons are built in. Use any <code>ICON_LC_*</code> constant from <code>IconsLucide.h</code>.
+</details>
+
+<details>
+<summary><b>How do I take screenshots like the ones above?</b></summary>
+<br>
+Run <code>glass_menu_demo.exe --shot &lt;folder&gt;</code>. The demo walks through every page and writes one image per view.
+</details>
+
+<br>
+
+## Credits
+
+- [Dear ImGui](https://github.com/ocornut/imgui) by Omar Cornut, MIT
+- [Lucide](https://lucide.dev) icons, ISC
 
 ## License
 
-MIT. See [LICENSE](LICENSE). Dear ImGui is MIT, Lucide icons are ISC.
+[MIT](LICENSE)
