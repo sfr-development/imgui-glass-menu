@@ -16,7 +16,7 @@ where cl >nul 2>nul
 if errorlevel 1 goto novs
 
 :compile
-cl /nologo /std:c++17 /EHsc /O2 /MD /utf-8 /DUNICODE /D_UNICODE ^
+cl /nologo /std:c++17 /EHsc /O2 /MT /utf-8 /DUNICODE /D_UNICODE ^
    /I"%ROOT%" /I"%ROOT%\src" /I"%ROOT%\imgui" ^
    /Fo"%OUT%\\" /Fe"%OUT%\glass_menu_demo.exe" ^
    "%~dp0demo.cpp" ^
